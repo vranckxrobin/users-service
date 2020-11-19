@@ -42,7 +42,11 @@ jobs:
           java-version: 8
 
       - name: Setup PostgreSQL
-        uses: Harmon758/postgresql-action@v1.0.0
+        uses: huaxk/postgis-action@v1
+        with:
+          postgresql password: "postgres"
+          postgresql user: "postgres"
+          postgresql db: 'advanced_programing_project_user_DB'
 
       - name: Test and build project
         run: mvn -f pom.xml clean install
