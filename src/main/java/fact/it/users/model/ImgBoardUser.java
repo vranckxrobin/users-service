@@ -1,6 +1,5 @@
 package fact.it.users.model;
 
-
 import javax.persistence.*;
 
 @Entity
@@ -28,7 +27,7 @@ public class ImgBoardUser {
         this.email=email;
     }
     public void setPassword(String password) {
-        this.password=password;
+        this.password = password;
     }
     public String getEmail() {
         return email;

@@ -1,5 +1,6 @@
 package fact.it.users;
 
+import com.jayway.jsonpath.JsonPath;
 import fact.it.users.model.ImgBoardUser;
 import fact.it.users.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -8,7 +9,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +21,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.junit.Assert.*;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -52,7 +57,7 @@ public class UserControllerIntegrationTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$.password", is("test")));
+                .andExpect(jsonPath("$.password", is(user1.getPassword())));
     }
 
     @Test
@@ -67,39 +72,49 @@ public class UserControllerIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
                 .andExpect(jsonPath("$[0].email", is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$[0].password", is("test")))
+                .andExpect(jsonPath("$[0].password", is(user1.getPassword())))
                 .andExpect(jsonPath("$[1].email", is("r0703029@student.thomasmore.be")))
-                .andExpect(jsonPath("$[1].password", is("test2")));
+                .andExpect(jsonPath("$[1].password", is(user2.getPassword())));
     }
 
 
     @Test
     public void whenPostUser_thenReturnJsonUser() throws Exception {
         ImgBoardUser user3 = new ImgBoardUser("r0703030@student.thomasmore.be", "test3");
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
-        mockMvc.perform(post("/user")
+        MvcResult result = mockMvc.perform(post("/user")
                 .content(mapper.writeValueAsString(user3))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("r0703030@student.thomasmore.be")))
-                .andExpect(jsonPath("$.password", is("test3")));
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test3",encryptedPassword ));
+
+
+        //.andExpect(encoder.matches("test3", MockMvcResultMatchers.jsonPath("$.password").value());
+                //jsonPath("$.password", is(user3.getPassword()))
     }
 
     @Test
     public void givenUser_whenPutUser_thenReturnJsonUser() throws Exception {
-
         ImgBoardUser updateUser = new ImgBoardUser("r0703028@student.thomasmore.be", "test4");
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
-        mockMvc.perform(put("/user")
+        MvcResult result = mockMvc.perform(put("/user")
                 .content(mapper.writeValueAsString(updateUser))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email", is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$.password", is("test4")));
-    }
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test4",encryptedPassword ));    }
 
     @Test
     public void givenUser_whenDeleteUser_thenStatusOk() throws Exception {

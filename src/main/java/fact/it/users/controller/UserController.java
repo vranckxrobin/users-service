@@ -1,6 +1,6 @@
 package fact.it.users.controller;
 
-
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import fact.it.users.model.ImgBoardUser;
 import fact.it.users.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,8 +21,8 @@ public class UserController {
     @PostConstruct
     public void fillDB(){
         if(userRepository.count()==0){
-            userRepository.save(new ImgBoardUser("r0703028@student.thomasmore.be", "test"));
-            userRepository.save(new ImgBoardUser("r0703029@student.thomasmore.be", "test"));
+            userRepository.save(new ImgBoardUser("r0703028@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
+            userRepository.save(new ImgBoardUser("r0703029@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
         }
     }
     @GetMapping("/users")
@@ -39,6 +39,7 @@ public class UserController {
     @PostMapping(value = "/user")
     public ImgBoardUser createUser(@RequestBody ImgBoardUser user){
         user.setId(0);
+        user.setPassword(new BCryptPasswordEncoder().encode(user.getPassword()));
         userRepository.save(user);
         return user;
     }
@@ -46,7 +47,8 @@ public class UserController {
     public ImgBoardUser updateUserPassword(@RequestBody ImgBoardUser updateUser){
         ImgBoardUser retrievedUser = userRepository.findImgBoardUserByEmail(updateUser.getEmail());
         String password = updateUser.getPassword();
-        retrievedUser.setPassword(password);
+        retrievedUser.setPassword(new BCryptPasswordEncoder().encode(password));
+
         userRepository.save(retrievedUser);
         return retrievedUser;
     }

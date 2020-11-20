@@ -1,5 +1,6 @@
 package fact.it.users;
 
+import com.jayway.jsonpath.JsonPath;
 import fact.it.users.model.ImgBoardUser;
 import fact.it.users.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -9,13 +10,16 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.collection.IsCollectionWithSize.hasSize;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -67,13 +71,18 @@ public class UserControllerUnitTests {
     public void whenPostUser_thenReturnJsonReview() throws Exception{
         ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
 
-        mockMvc.perform(post("/user")
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        MvcResult result = mockMvc.perform(post("/user")
                 .content(mapper.writeValueAsString(user))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$.password",is("test")));
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test",encryptedPassword ));
     }
 
     @Test
@@ -84,14 +93,18 @@ public class UserControllerUnitTests {
 
         ImgBoardUser updatedUser = new ImgBoardUser("r0703028@student.thomasmore.be","test2");
 
-        mockMvc.perform(put("/user")
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        MvcResult result = mockMvc.perform(put("/user")
                 .content(mapper.writeValueAsString(updatedUser))
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
-                .andExpect(jsonPath("$.password",is("test2")));
-    }
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test2",encryptedPassword ));    }
 
     @Test
     public void givenUser_whenDeleteUser_thenStatusOk() throws Exception{
