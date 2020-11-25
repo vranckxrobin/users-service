@@ -32,8 +32,8 @@ public class UserControllerIntegrationTest {
     @Autowired
     private UserRepository userRepository;
 
-    private ImgBoardUser user1 = new ImgBoardUser("r0703028@student.thomasmore.be", "test");
-    private ImgBoardUser user2 = new ImgBoardUser("r0703029@student.thomasmore.be", "test2");
+    private ImgBoardUser user1 = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be", "test");
+    private ImgBoardUser user2 = new ImgBoardUser("Joske","Vermeulen","r0703029@student.thomasmore.be", "test2");
 
     @BeforeEach
     public void beforeAllTests() {
@@ -56,6 +56,8 @@ public class UserControllerIntegrationTest {
         mockMvc.perform(get("/user/{email}", "r0703028@student.thomasmore.be"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
                 .andExpect(jsonPath("$.email", is("r0703028@student.thomasmore.be")))
                 .andExpect(jsonPath("$.password", is(user1.getPassword())));
     }
@@ -71,8 +73,12 @@ public class UserControllerIntegrationTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].firstname", is("Robin")))
+                .andExpect(jsonPath("$[0].lastname", is("Vranckx")))
                 .andExpect(jsonPath("$[0].email", is("r0703028@student.thomasmore.be")))
                 .andExpect(jsonPath("$[0].password", is(user1.getPassword())))
+                .andExpect(jsonPath("$[1].firstname", is("Joske")))
+                .andExpect(jsonPath("$[1].lastname", is("Vermeulen")))
                 .andExpect(jsonPath("$[1].email", is("r0703029@student.thomasmore.be")))
                 .andExpect(jsonPath("$[1].password", is(user2.getPassword())));
     }
@@ -80,7 +86,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void whenPostUser_thenReturnJsonUser() throws Exception {
-        ImgBoardUser user3 = new ImgBoardUser("r0703030@student.thomasmore.be", "test3");
+        ImgBoardUser user3 = new ImgBoardUser("John","Smith","r0703030@student.thomasmore.be", "test3");
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
         MvcResult result = mockMvc.perform(post("/user")
@@ -88,6 +94,8 @@ public class UserControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("John")))
+                .andExpect(jsonPath("$.lastname", is("Smith")))
                 .andExpect(jsonPath("$.email", is("r0703030@student.thomasmore.be")))
                 .andReturn();
         String response = result.getResponse().getContentAsString();
@@ -101,7 +109,7 @@ public class UserControllerIntegrationTest {
 
     @Test
     public void givenUser_whenPutUser_thenReturnJsonUser() throws Exception {
-        ImgBoardUser updateUser = new ImgBoardUser("r0703028@student.thomasmore.be", "test4");
+        ImgBoardUser updateUser = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be", "test4");
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
 
@@ -110,6 +118,8 @@ public class UserControllerIntegrationTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
                 .andExpect(jsonPath("$.email", is("r0703028@student.thomasmore.be")))
                 .andReturn();
         String response = result.getResponse().getContentAsString();

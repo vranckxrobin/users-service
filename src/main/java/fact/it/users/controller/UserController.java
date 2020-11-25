@@ -21,8 +21,8 @@ public class UserController {
     @PostConstruct
     public void fillDB(){
         if(userRepository.count()==0){
-            userRepository.save(new ImgBoardUser("r0703028@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
-            userRepository.save(new ImgBoardUser("r0703029@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
+            userRepository.save(new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
+            userRepository.save(new ImgBoardUser("Joske","Vermeulen","r0703029@student.thomasmore.be",new BCryptPasswordEncoder().encode("test") ));
         }
     }
     @GetMapping("/users")
@@ -48,6 +48,8 @@ public class UserController {
         ImgBoardUser retrievedUser = userRepository.findImgBoardUserByEmail(updateUser.getEmail());
         String password = updateUser.getPassword();
         retrievedUser.setPassword(new BCryptPasswordEncoder().encode(password));
+        retrievedUser.setFirstname(updateUser.getFirstname());
+        retrievedUser.setLastname(updateUser.getLastname());
 
         userRepository.save(retrievedUser);
         return retrievedUser;

@@ -37,20 +37,22 @@ public class UserControllerUnitTests {
 
     @Test
     public void givenUser_whenGetUserByEmail_thenReturnJsonReview() throws Exception {
-        ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
 
         given(userRepository.findImgBoardUserByEmail("r0703028@student.thomasmore.be")).willReturn(user);
 
         mockMvc.perform(get("/user/{email}","r0703028@student.thomasmore.be"))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
                 .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
                 .andExpect(jsonPath("$.password",is("test")));
     }
     @Test
     public void givenUser_whenGetAllUser_thenReturnJsonReview() throws Exception {
-        ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
-        ImgBoardUser user2 = new ImgBoardUser("r0703029@student.thomasmore.be","test2");
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
+        ImgBoardUser user2 = new ImgBoardUser("Joske","Vermeulen","r0703029@student.thomasmore.be","test2");
 
         List<ImgBoardUser> userList = new ArrayList<>();
         userList.add(user);
@@ -61,15 +63,19 @@ public class UserControllerUnitTests {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$[0].firstname", is("Robin")))
+                .andExpect(jsonPath("$[0].lastname", is("Vranckx")))
                 .andExpect(jsonPath("$[0].email",is("r0703028@student.thomasmore.be")))
                 .andExpect(jsonPath("$[0].password",is("test")))
+                .andExpect(jsonPath("$[1].firstname", is("Joske")))
+                .andExpect(jsonPath("$[1].lastname", is("Vermeulen")))
                 .andExpect(jsonPath("$[1].email",is("r0703029@student.thomasmore.be")))
                 .andExpect(jsonPath("$[1].password",is("test2")));
     }
 
     @Test
     public void whenPostUser_thenReturnJsonReview() throws Exception{
-        ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -78,6 +84,8 @@ public class UserControllerUnitTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
                 .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
                 .andReturn();
         String response = result.getResponse().getContentAsString();
@@ -87,11 +95,11 @@ public class UserControllerUnitTests {
 
     @Test
     public void givenUser_whenPutUser_thenReturnJsonReview() throws Exception{
-        ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
 
         given(userRepository.findImgBoardUserByEmail("r0703028@student.thomasmore.be")).willReturn(user);
 
-        ImgBoardUser updatedUser = new ImgBoardUser("r0703028@student.thomasmore.be","test2");
+        ImgBoardUser updatedUser = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test2");
 
         BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
 
@@ -100,6 +108,8 @@ public class UserControllerUnitTests {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
                 .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
                 .andReturn();
         String response = result.getResponse().getContentAsString();
@@ -108,7 +118,7 @@ public class UserControllerUnitTests {
 
     @Test
     public void givenUser_whenDeleteUser_thenStatusOk() throws Exception{
-        ImgBoardUser user = new ImgBoardUser("r0703028@student.thomasmore.be","test");
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
 
         given(userRepository.findImgBoardUserByEmail("r0703028@student.thomasmore.be")).willReturn(user);
 
