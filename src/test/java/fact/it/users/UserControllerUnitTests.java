@@ -2,6 +2,7 @@ package fact.it.users;
 
 import com.jayway.jsonpath.JsonPath;
 import fact.it.users.model.ImgBoardUser;
+import fact.it.users.model.Login;
 import fact.it.users.repository.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
@@ -134,5 +135,77 @@ public class UserControllerUnitTests {
         mockMvc.perform(delete("/user/{email}","r0703028@student.thomasmore.be")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound());
+    }
+
+
+
+    @Test
+    public void whenLoginUser_thenthenReturnJsonUser() throws Exception{
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        MvcResult result = mockMvc.perform(post("/user")
+                .content(mapper.writeValueAsString(user))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
+                .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test",encryptedPassword ));
+
+        user.setPassword(encryptedPassword);
+
+        given(userRepository.findImgBoardUserByEmail("r0703028@student.thomasmore.be")).willReturn(user);
+
+        Login login = new Login(user.getEmail(),"test");
+
+        mockMvc.perform(post("/login")
+                .content(mapper.writeValueAsString(login))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
+                .andExpect(jsonPath("$.email", is("r0703028@student.thomasmore.be")))
+                .andExpect(jsonPath("$.password", is(encryptedPassword)));
+
+    }
+    @Test
+    public void whenLoginUserWrong_thenthenReturnNull() throws Exception{
+        ImgBoardUser user = new ImgBoardUser("Robin","Vranckx","r0703028@student.thomasmore.be","test");
+
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+
+        MvcResult result = mockMvc.perform(post("/user")
+                .content(mapper.writeValueAsString(user))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstname", is("Robin")))
+                .andExpect(jsonPath("$.lastname", is("Vranckx")))
+                .andExpect(jsonPath("$.email",is("r0703028@student.thomasmore.be")))
+                .andReturn();
+        String response = result.getResponse().getContentAsString();
+        String encryptedPassword = JsonPath.parse(response).read("$.password").toString();
+        assertTrue(encoder.matches("test",encryptedPassword ));
+
+        user.setPassword(encryptedPassword);
+
+        given(userRepository.findImgBoardUserByEmail("r0703028@student.thomasmore.be")).willReturn(user);
+
+        Login login = new Login(user.getEmail(),"test2");
+
+        mockMvc.perform(post("/login")
+                .content(mapper.writeValueAsString(login))
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(jsonPath("$").doesNotExist());
+
+
+
     }
 }

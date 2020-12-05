@@ -1,5 +1,6 @@
 package fact.it.users.controller;
 
+import fact.it.users.model.Login;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import fact.it.users.model.ImgBoardUser;
 import fact.it.users.repository.UserRepository;
@@ -35,7 +36,15 @@ public class UserController {
 
         return userRepository.findImgBoardUserByEmail(email);
     }
-
+    @PostMapping(value = "/login")
+    public ImgBoardUser login(@RequestBody Login login){
+        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+        ImgBoardUser user = getUserByEmail(login.getEmail());
+        if(encoder.matches(login.getPassword(),user.getPassword() )){
+            return user;
+        }
+        return null;
+    }
     @PostMapping(value = "/user")
     public ImgBoardUser createUser(@RequestBody ImgBoardUser user){
         user.setId(0);
